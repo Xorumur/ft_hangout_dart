@@ -29,7 +29,8 @@ environment:
 # versions available, run `flutter pub outdated`.
 dependencies:
   flutter:
-    sdk: flutter
+    sdk: flutter  
+  provider: ^6.0.2  # Ajoutez cette ligne pour utiliser la dernière version de provider
   shared_preferences: ^2.3.2
   sqflite: ^2.0.0+4
   path: ^1.8.0

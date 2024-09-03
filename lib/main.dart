@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:ft_hangout/SmsListener.dart';
 import 'ContactListPage.dart';
 import 'AddContactPage.dart';
+import 'package:provider/provider.dart';  // Ajouter cette ligne
+
 void main() {
-  runApp(const MyApp());
+  runApp(ChangeNotifierProvider(
+      create: (_) => SmsListener(),
+      child: MyApp(),
+    ),);
 }
 
 class MyApp extends StatelessWidget {

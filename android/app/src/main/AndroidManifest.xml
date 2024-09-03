@@ -30,16 +30,22 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
-    </application>
-    <!-- Required to query activities that can process text, see:
-         https://developer.android.com/training/package-visibility and
-         https://developer.android.com/reference/android/content/Intent#ACTION_PROCESS_TEXT.
 
-         In particular, this is used by the Flutter engine in io.flutter.plugin.text.ProcessTextPlugin. -->
+        <!-- Ici, placez la balise <receiver> -->
+        <receiver android:name=".SmsReceiver"  android:exported="true">
+            <intent-filter>
+                <action android:name="android.provider.Telephony.SMS_RECEIVED" />
+            </intent-filter>
+        </receiver>
+
+    </application>
+    
+    <!-- Required permissions -->
     <uses-permission android:name="android.permission.SEND_SMS"/>
     <uses-permission android:name="android.permission.RECEIVE_SMS"/>
     <uses-permission android:name="android.permission.READ_SMS"/>
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    
     <queries>
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
@@ -59,5 +65,4 @@
             <action android:name="android.support.customtabs.action.CustomTabsService" />
         </intent>
     </queries>
-    
 </manifest>
