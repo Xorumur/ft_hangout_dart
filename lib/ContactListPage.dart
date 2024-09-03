@@ -441,11 +441,13 @@
 //     );
 //   }
 // }
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:ft_hangout/ChatPage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:intl/intl.dart'; // Importer le package intl
-import 'package:url_launcher/url_launcher.dart'; // Importer le package url_launcher
-import 'package:telephony/telephony.dart'; // Importer le package telephony
+import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'database_service.dart';
 import 'contact.dart';
 import 'ColorSelectionPage.dart';
@@ -464,7 +466,8 @@ class _ContactListPageState extends State<ContactListPage> with WidgetsBindingOb
   List<Contact> contacts = [];
   Color _appBarColor = Colors.blue; // Couleur par défaut de l'AppBar
   String? _lastPausedTime; // Variable pour stocker l'heure à laquelle l'application a été mise en pause
-  final Telephony telephony = Telephony.instance; // Instance de Telephony
+
+  static const platform = MethodChannel('sms_sender'); // Ajout du MethodChannel pour l'envoi de SMS natif
 
   @override
   void initState() {
@@ -473,14 +476,6 @@ class _ContactListPageState extends State<ContactListPage> with WidgetsBindingOb
     _loadLastPausedTime(); // Charger l'heure à laquelle l'application a été mise en pause
     _loadAppBarColor();  // Charger la couleur de l'AppBar lors de l'initialisation
     _loadContacts();  // Charger les contacts lors de l'initialisation de la page
-    _requestSmsPermissions(); // Demander les permissions SMS
-  }
-
-  Future<void> _requestSmsPermissions() async {
-    bool? permissionsGranted = await telephony.requestPhoneAndSmsPermissions;
-    if (permissionsGranted == null || !permissionsGranted) {
-      print("Permissions SMS refusées.");
-    }
   }
 
   @override
@@ -558,7 +553,6 @@ class _ContactListPageState extends State<ContactListPage> with WidgetsBindingOb
     _loadContacts();  // Recharger les contacts après suppression
   }
 
-  // Méthode utilisant url_launcher
   Future<void> _sendSMSWithUrlLauncher(String phoneNumber, String message) async {
     final Uri smsUri = Uri(
       scheme: 'sms',
@@ -575,16 +569,15 @@ class _ContactListPageState extends State<ContactListPage> with WidgetsBindingOb
     }
   }
 
-  // Méthode utilisant telephony
-  Future<void> _sendSMSWithTelephony(String message, String recipient) async {
+  Future<void> _sendSMSWithNative(String phoneNumber, String message) async {
     try {
-      await telephony.sendSms(
-        to: recipient,
-        message: message,
-      );
-      print("SMS envoyé avec succès à $recipient");
-    } catch (error) {
-      print("Échec de l'envoi du SMS : $error");
+      final result = await platform.invokeMethod('sendSMS', {
+        'phoneNumber': phoneNumber,
+        'message': message,
+      });
+      print(result);
+    } catch (e) {
+      print("Failed to send SMS: $e");
     }
   }
 
@@ -685,18 +678,24 @@ class _ContactListPageState extends State<ContactListPage> with WidgetsBindingOb
               },
               trailing: Column(
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.message),
-                    onPressed: () {
-                      // Envoi d'un SMS au contact avec url_launcher
-                      _sendSMSWithUrlLauncher(contact.phone, 'Hello, this is a test message.');
-                    },
-                  ),
+                  // IconButton(
+                  //   icon: const Icon(Icons.message),
+                  //   onPressed: () {
+                  //     // Envoi d'un SMS au contact avec url_launcher
+                  //     _sendSMSWithUrlLauncher(contact.phone, 'Hello, this is a test message.');
+                  //   },
+                  // ),
                   IconButton(
                     icon: const Icon(Icons.send),
-                    onPressed: () {
+                    onPressed: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ChatPage(contact: contact),
+                        ),
+                      );
                       // Envoi d'un SMS au contact avec telephony
-                      _sendSMSWithTelephony('Hello, this is a test message.', contact.phone);
+                      _sendSMSWithNative(contact.phone, 'Hello, this is a test message.');
                     },
                   ),
                 ],

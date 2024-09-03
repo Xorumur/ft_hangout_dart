@@ -16,6 +16,7 @@ class Language {
       'Save': 'Save',
       'SelectColor': 'Select a color',
       'EditContact': 'Edit Contact',
+      'typeMessage': 'Type a message',
       // Ajoutez d'autres clés et traductions ici
     },
     'fr': {
@@ -31,6 +32,7 @@ class Language {
       'Save': 'Enregistrer',
       'SelectColor': 'Sélectionner une couleur',
       'EditContact': 'Modifier le contact',
+      'typeMessage': 'Tapez un message',
       // Ajoutez d'autres clés et traductions ici
     },
   };
