@@ -3,12 +3,17 @@ import 'package:ft_hangout/SmsListener.dart';
 import 'ContactListPage.dart';
 import 'AddContactPage.dart';
 import 'package:provider/provider.dart';  // Ajouter cette ligne
-
+import 'ContactNotifier.dart';  // Ajouter cette ligne
 void main() {
-  runApp(ChangeNotifierProvider(
-      create: (_) => SmsListener(),
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ContactNotifier()),  // Fournir ContactNotifier
+        ChangeNotifierProvider(create: (_) => SmsListener()),      // Fournir SmsListener
+      ],
       child: MyApp(),
-    ),);
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {

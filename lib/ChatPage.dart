@@ -273,6 +273,9 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
 
   Future<void> _loadMessages() async {
     final messages = await DatabaseService.instance.getMessages(widget.contact.id!);
+    
+    if (!mounted) return;
+
     setState(() {
       _messages = messages;
     });
