@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ft_hangout/ChatPage.dart';
-import 'package:provider/provider.dart'; // Importer Provider pour accéder à SmsListener
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -11,7 +11,7 @@ import 'ColorSelectionPage.dart';
 import 'EditContactPage.dart';
 import 'AddContactPage.dart';
 import 'Language.dart';
-import 'SmsListener.dart'; // Importer SmsListener
+import 'SmsListener.dart';
 
 class ContactListPage extends StatefulWidget {
   const ContactListPage({super.key});
@@ -23,34 +23,33 @@ class ContactListPage extends StatefulWidget {
 class _ContactListPageState extends State<ContactListPage> with WidgetsBindingObserver {
   List<Contact> contacts = [];
   Color _appBarColor = Colors.blue; // Couleur par défaut de l'AppBar
-  String? _lastPausedTime; // Variable pour stocker l'heure à laquelle l'application a été mise en pause
+  String? _lastPausedTime;
 
-  static const platform = MethodChannel('sms_sender'); // Ajout du MethodChannel pour l'envoi de SMS natif
+  static const platform = MethodChannel('sms_sender'); // MethodChannel pour l'envoi de SMS et appels natifs
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this); // Ajouter l'observateur
-    _loadLastPausedTime(); // Charger l'heure à laquelle l'application a été mise en pause
-    _loadAppBarColor();  // Charger la couleur de l'AppBar lors de l'initialisation
-    _loadContacts();  // Charger les contacts lors de l'initialisation de la page
+    WidgetsBinding.instance.addObserver(this); 
+    _loadLastPausedTime();
+    _loadAppBarColor();
+    _loadContacts();
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this); // Retirer l'observateur
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
-  // Méthode pour surveiller les changements d'état de l'application
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
 
     if (state == AppLifecycleState.paused) {
-      _saveLastPausedTime(); // Sauvegarder l'heure lorsque l'application est mise en pause
+      _saveLastPausedTime();
     } else if (state == AppLifecycleState.resumed) {
-      _loadLastPausedTime(); // Recharger l'heure lorsque l'application revient au premier plan
+      _loadLastPausedTime();
     }
   }
 
@@ -91,7 +90,6 @@ class _ContactListPageState extends State<ContactListPage> with WidgetsBindingOb
 
   Future<void> _loadContacts() async {
     final loadedContacts = await DatabaseService.instance.readAllContacts();
-    // print('Loaded ${loadedContacts.length} contacts');
     setState(() {
       contacts = loadedContacts;
     });
@@ -99,44 +97,25 @@ class _ContactListPageState extends State<ContactListPage> with WidgetsBindingOb
 
   Future<void> _addContact(Contact contact) async {
     await DatabaseService.instance.createContact(contact);
-    _loadContacts();  // Recharger les contacts après ajout
+    _loadContacts();
   }
 
   Future<void> _updateContact(Contact updatedContact) async {
     await DatabaseService.instance.updateContact(updatedContact);
-    _loadContacts();  // Recharger les contacts après modification
+    _loadContacts();
   }
 
   Future<void> _deleteContact(int id) async {
     await DatabaseService.instance.deleteContact(id);
-    _loadContacts();  // Recharger les contacts après suppression
+    _loadContacts();
   }
 
-  Future<void> _sendSMSWithUrlLauncher(String phoneNumber, String message) async {
-    final Uri smsUri = Uri(
-      scheme: 'sms',
-      path: phoneNumber,
-      queryParameters: <String, String>{
-        'body': message,
-      },
-    );
-
-    if (await canLaunchUrl(smsUri)) {
-      await launchUrl(smsUri);
-    } else {
-      print('Could not launch $smsUri');
-    }
-  }
-
-  Future<void> _sendSMSWithNative(String phoneNumber, String message) async {
+  // Méthode pour appeler un contact en utilisant la fonction native
+  Future<void> _callContact(String phoneNumber) async {
     try {
-      final result = await platform.invokeMethod('sendSMS', {
-        'phoneNumber': phoneNumber,
-        'message': message,
-      });
-      print(result);
-    } catch (e) {
-      print("Failed to send SMS: $e");
+      await platform.invokeMethod('makeCall', {'phoneNumber': phoneNumber});
+    } on PlatformException catch (e) {
+      print("Failed to make a call: '${e.message}'.");
     }
   }
 
@@ -144,8 +123,8 @@ class _ContactListPageState extends State<ContactListPage> with WidgetsBindingOb
   Widget build(BuildContext context) {
     return Consumer<SmsListener>(
       builder: (context, smsListener, child) {
-        // print('Rebuilding ContactListPage');
         _loadContacts();
+        _loadAppBarColor();
         return Scaffold(
           appBar: AppBar(
             title: Column(
@@ -154,17 +133,16 @@ class _ContactListPageState extends State<ContactListPage> with WidgetsBindingOb
                 Text(Language.resolve("title")),
                 if (_lastPausedTime != null)
                   Text(
-                    'Paused at: $_lastPausedTime',
+                    '${Language.resolve('Pause')}: $_lastPausedTime',
                     style: TextStyle(fontSize: 14.0),
                   ),
               ],
             ),
-            backgroundColor: _appBarColor, // Utilisation de la couleur sélectionnée
+            backgroundColor: _appBarColor,
             actions: [
               IconButton(
                 icon: const Icon(Icons.add),
                 onPressed: () async {
-                  // Naviguer vers la page d'ajout de contact
                   final newContact = await Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -180,7 +158,6 @@ class _ContactListPageState extends State<ContactListPage> with WidgetsBindingOb
               IconButton(
                 icon: const Icon(Icons.color_lens),
                 onPressed: () async {
-                  // Naviguer vers la page de sélection de couleur
                   await Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -196,8 +173,8 @@ class _ContactListPageState extends State<ContactListPage> with WidgetsBindingOb
               IconButton(
                 icon: const Icon(Icons.language),
                 onPressed: () async {
-                  await Language.changeLanguage(); // Change la langue
-                  setState(() {}); // Force la reconstruction de la page pour mettre à jour l'affichage
+                  await Language.changeLanguage();
+                  setState(() {});
                 },
               ),
             ],
@@ -222,7 +199,6 @@ class _ContactListPageState extends State<ContactListPage> with WidgetsBindingOb
                     ],
                   ),
                   onTap: () async {
-                    // Naviguer vers la page d'édition pour modifier le contact
                     final updatedContact = await Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -230,16 +206,15 @@ class _ContactListPageState extends State<ContactListPage> with WidgetsBindingOb
                       ),
                     );
 
-                    // Si un contact mis à jour a été retourné, mettre à jour la base de données
                     if (updatedContact != null) {
                       _updateContact(updatedContact);
                     }
                   },
                   onLongPress: () {
-                    // Supprimer le contact sur un appui long
                     _deleteContact(contact.id!);
                   },
-                  trailing: Column(
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
                         icon: const Icon(Icons.send),
@@ -250,8 +225,13 @@ class _ContactListPageState extends State<ContactListPage> with WidgetsBindingOb
                               builder: (context) => ChatPage(contact: contact),
                             ),
                           );
-                          // Envoi d'un SMS au contact avec telephony
-                          _sendSMSWithNative(contact.phone, 'Hello, this is a test message.');
+                          // _sendSMSWithNative(contact.phone, 'Hello, this is a test message.');
+                        },
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.call),
+                        onPressed: () async {
+                          _callContact(contact.phone); // Appel du contact
                         },
                       ),
                     ],

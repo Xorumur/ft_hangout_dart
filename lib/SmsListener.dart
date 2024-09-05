@@ -35,27 +35,10 @@ class SmsListener with ChangeNotifier {
                 image: "falsepath",
               );
               var db = await DatabaseService.instance.createContact(newContact);
-              print("db: ${db.id} ${db.phone}");
               await DatabaseService.instance.insertMessage(db.id!, message, false);
-
-              // var ContactDb = await DatabaseService.instance.getMessages(newContact.id!);
-              // print("ContactDb: $ContactDb");
             } catch (e) {
               print('An error occurred: $e');  // Imprime toute erreur qui survient
           }
-          // print("Contact not found for phone number $sender");
-          // final newContact = Contact(
-          //   firstName: "Unknown",
-          //   lastName: "Unknown",
-          //   phone: sender,
-          //   email: "Unknown",
-          //   age: 0,
-          //   image: null,
-          // );
-          // await DatabaseService.instance.createContact(newContact);
-          // await DatabaseService.instance.insertMessage(newContact.id!, message, false);
-          // List<Contact> contactCount = await DatabaseService.instance.readAllContacts();
-          // print('test');
           notifyListeners();
         }
       }

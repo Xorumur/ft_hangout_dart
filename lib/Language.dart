@@ -17,6 +17,13 @@ class Language {
       'SelectColor': 'Select a color',
       'EditContact': 'Edit Contact',
       'typeMessage': 'Type a message',
+      'Pause': "Paused at",
+      'Red': 'Red',
+      'Green': 'Green',
+      'Blue': 'Blue',
+      'Orange': 'Orange',
+      'Purple': 'Purple',
+      'Unknown': 'Unknown',
       // Ajoutez d'autres clés et traductions ici
     },
     'fr': {
@@ -33,6 +40,13 @@ class Language {
       'SelectColor': 'Sélectionner une couleur',
       'EditContact': 'Modifier le contact',
       'typeMessage': 'Tapez un message',
+      'Pause': "Mis en pause à",
+      'Red': 'Rouge',
+      'Green': 'Vert',
+      'Blue': 'Bleu',
+      'Orange': 'Orange',
+      'Purple': 'Violet',
+      'Unknown': 'Inconnu',
       // Ajoutez d'autres clés et traductions ici
     },
   };
